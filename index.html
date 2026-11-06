@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Projeto Aurora — case study · Portfólio</title>
+<meta name="description" content="Case study do Aurora, um app de finanças pessoais: contexto, processo, decisões de design e resultados.">
+<meta name="author" content="Kauan">
+<meta name="theme-color" content="#f3faf6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#050807" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="Portfólio de Kauan">
+<meta property="og:title" content="Aurora — case study de produto · Portfólio">
+<meta property="og:description" content="Redesign de um app de finanças pessoais: pesquisa, decisões de design, telas e resultados.">
+<meta property="og:image" content="og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Capa do case study Aurora, com o título e a paleta do projeto">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Aurora — case study de produto">
+<meta name="twitter:description" content="Pesquisa, decisões de design, telas e resultados de um app de finanças pessoais.">
+<meta name="twitter:image" content="og-image.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cdefs%3E%3ClinearGradient%20id='g'%20x1='0'%20y1='0'%20x2='1'%20y2='1'%3E%3Cstop%20stop-color='%2334d399'/%3E%3Cstop%20offset='1'%20stop-color='%23065f46'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width='64'%20height='64'%20rx='18'%20fill='url(%23g)'/%3E%3Ccircle%20cx='32'%20cy='32'%20r='10'%20fill='%23052e16'/%3E%3C/svg%3E">
+<style>
+  /* ================= tokens ================= */
+  :root{
+    color-scheme: light;
+    --bg:#f3faf6;
+    --surface:#ffffff;
+    --surface-2:#e7f3ec;
+    --txt:#08130e;
+    --muted:#4b6256;
+    --line:#d7e7de;
+    --accent:#047857;
+    --accent-2:#10b981;
+    --cyan:#65a30d;
+    --ok:#047857;
+    --shadow:0 24px 48px -32px rgba(4,35,24,.35);
+    --r:20px;
+    --topbar-h:62px;
+  }
+  [data-theme="dark"]{
+    color-scheme: dark;
+    --bg:#050807;
+    --surface:#0b1210;
+    --surface-2:#0f1a15;
+    --txt:#e8f5ee;
+    --muted:#8aa396;
+    --line:#1a2a22;
+    --accent:#34d399;
+    --accent-2:#10b981;
+    --cyan:#a3e635;
+    --ok:#34d399;
+    --shadow:0 26px 52px -30px rgba(0,0,0,.9);
+  }
+
+  /* ================= base ================= */
+  *,*::before,*::after{box-sizing:border-box}
+  [hidden]{display:none !important}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;scroll-padding-top:calc(var(--topbar-h) + 16px)}
+  body{
+    margin:0;
+    padding-bottom:90px;
+    background:var(--bg);
+    color:var(--txt);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    line-height:1.5;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+    transition:background .3s ease,color .3s ease;
+  }
+  img,svg{display:block}
+  a{color:inherit}
+  button{font:inherit;color:inherit}
+  a,button,summary{touch-action:manipulation}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+  ::selection{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+  .wrap{width:100%;max-width:1120px;margin-inline:auto;padding-inline:20px}
+
+  /* revelação no scroll — só esconde se o JS estiver ativo */
+  .js .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+  .js .reveal.is-visible{opacity:1;transform:none}
+
+  /* ================= progresso ================= */
+  #progresso{position:fixed;top:0;left:0;z-index:60;width:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-2),var(--cyan));transition:width .08s linear}
+
+  /* ================= topbar ================= */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:var(--bg);
+    background:color-mix(in srgb,var(--bg) 84%,transparent);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+  }
+  .topbar::after{content:"";display:block;height:1px;background:transparent;transition:background .2s ease}
+  .topbar.scrolled::after{background:var(--line)}
+  .topbar-inner{display:flex;align-items:center;gap:12px;max-width:1120px;margin-inline:auto;padding:12px 20px}
+  .brand{display:flex;align-items:center;gap:9px;color:var(--txt);font-size:14px;font-weight:700;letter-spacing:-.01em;line-height:1.1;text-decoration:none}
+  .brand small{display:block;margin-top:2px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .brand-mark{position:relative;flex:0 0 auto;width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 8px 16px -10px rgba(16,185,129,.95)}
+  .brand-mark::after{content:"";position:absolute;inset:9px;border-radius:50%;background:rgba(255,255,255,.92)}
+  .nav{display:none}
+  .nav a{padding:8px 10px;border-radius:10px;color:var(--muted);font-size:13.5px;font-weight:600;text-decoration:none;transition:color .18s ease,background .18s ease}
+  .nav a:hover{color:var(--txt);background:var(--surface-2)}
+  .nav a.active{color:var(--accent)}
+  .topbar-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+  .theme-btn{display:grid;place-items:center;flex:0 0 auto;width:42px;height:42px;border:1px solid var(--line);border-radius:13px;background:var(--surface);cursor:pointer;transition:transform .12s ease,background .2s ease}
+  .theme-btn:active{transform:scale(.94)}
+  .theme-btn svg{width:18px;height:18px}
+  .i-sun{display:none}
+  [data-theme="dark"] .i-sun{display:block}
+  [data-theme="dark"] .i-moon{display:none}
+
+  /* ================= botões ================= */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    min-height:50px;padding:0 20px;border:1px solid transparent;border-radius:14px;
+    font-size:14px;font-weight:650;text-decoration:none;cursor:pointer;
+    transition:transform .12s ease,box-shadow .2s ease,background .2s ease,border-color .2s ease;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn svg{flex:0 0 auto;width:16px;height:16px}
+  .btn-primary{background:linear-gradient(180deg,#4ade80,#10b981);color:#04231a;box-shadow:0 14px 26px -16px rgba(16,185,129,.9)}
+  .btn-ghost{background:var(--surface);color:var(--txt);border-color:var(--line)}
+  .btn-ghost:hover{background:var(--surface-2)}
+  .nav-cta{display:none}
+
+  /* ================= hero ================= */
+  .hero{position:relative;overflow:hidden;padding:30px 0 4px}
+  .hero::before{
+    content:"";position:absolute;top:-150px;right:-120px;width:330px;height:330px;border-radius:50%;
+    background:radial-gradient(circle at 40% 40%,rgba(52,211,153,.30),rgba(16,185,129,.20) 48%,rgba(163,230,53,.10) 64%,transparent 76%);
+    filter:blur(26px);pointer-events:none;
+  }
+  .hero-grid{position:relative;display:block}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+  .eyebrow::before{content:"";width:22px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+  h1{margin:14px 0 0;font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:clamp(34px,8.6vw,46px);font-weight:600;line-height:1.04;letter-spacing:-.025em}
+  h1 em{font-style:italic;background:linear-gradient(100deg,var(--accent),var(--accent-2) 58%,var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero-lead{margin:14px 0 0;max-width:46ch;font-size:15px;line-height:1.6;color:var(--muted)}
+  .meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px;margin:24px 0 0;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:var(--shadow)}
+  .meta div{min-width:0}
+  .meta dt{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+  .meta dd{margin:3px 0 0;font-size:13.5px;font-weight:650;letter-spacing:-.01em}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+  .hero-visual{display:none}
+
+  /* ================= cabeçalho de seção ================= */
+  .section{padding:38px 0 0}
+  .section-head .kicker{display:block;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+  .section-head h2{margin:8px 0 0;font-size:23px;line-height:1.2;letter-spacing:-.025em}
+  .section-head p{margin:8px 0 0;max-width:54ch;font-size:14px;line-height:1.55;color:var(--muted)}
+
+  /* ================= galeria / carrossel ================= */
+  .gallery{position:relative;margin-top:18px}
+  .track{
+    display:flex;gap:14px;margin-inline:-20px;padding:4px 20px 16px;
+    overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;
+    scrollbar-width:none;-ms-overflow-style:none;
+  }
+  .track::-webkit-scrollbar{display:none}
+  .track.dragging{scroll-snap-type:none;cursor:grabbing;user-select:none}
+  .slide{flex:0 0 236px;margin:0;scroll-snap-align:center;scroll-snap-stop:always}
+  .phone{
+    position:relative;width:236px;aspect-ratio:9/19.3;padding:8px;border-radius:30px;
+    background:linear-gradient(160deg,#1b3a2c,#060d0a 60%);
+    box-shadow:0 26px 46px -26px rgba(0,0,0,.7),inset 0 0 0 1px rgba(163,230,53,.10);
+  }
+  .phone::before{content:"";position:absolute;top:14px;left:50%;z-index:3;width:52px;height:11px;transform:translateX(-50%);border-radius:99px;background:#020604}
+  .screen{
+    --a-bg:#f4faf6;--a-txt:#08130e;--a-muted:#5c7267;--a-card:#fff;--a-line:#e0ece5;
+    position:relative;display:flex;flex-direction:column;height:100%;overflow:hidden;
+    border-radius:23px;background:var(--a-bg);color:var(--a-txt);font-size:9px;line-height:1.35;
+  }
+  [data-theme="dark"] .screen{--a-bg:#07100c;--a-txt:#e8f5ee;--a-muted:#8aa396;--a-card:#0d1712;--a-line:#1c2d24}
+  .app-status{display:flex;align-items:center;justify-content:space-between;padding:9px 12px 0;font-size:7px;font-weight:700;letter-spacing:.04em;color:var(--a-muted)}
+  .app-signal{display:flex;align-items:flex-end;gap:2px}
+  .app-signal i{width:2px;height:4px;border-radius:1px;background:var(--a-muted)}
+  .app-signal i:nth-child(2){height:6px}
+  .app-signal i:nth-child(3){height:8px}
+  .app-body{flex:1;min-height:0;padding:10px 11px 0}
+  .app-hi{margin:0;font-size:7.5px;font-weight:600;color:var(--a-muted)}
+  .app-h1{margin:1px 0 0;font-size:12px;font-weight:750;letter-spacing:-.02em}
+  .app-card{margin-top:9px;padding:9px;border:1px solid var(--a-line);border-radius:10px;background:var(--a-card)}
+  .app-label{font-size:6.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--a-muted)}
+  .app-balance{margin:2px 0 0;font-size:15px;font-weight:750;letter-spacing:-.03em}
+  .app-pill{display:inline-block;margin-left:4px;padding:2px 5px;border-radius:99px;background:rgba(4,120,87,.12);color:#047857;font-size:6px;font-weight:700;vertical-align:2px}
+  [data-theme="dark"] .app-pill{background:rgba(52,211,153,.14);color:#34d399}
+  .bars{display:flex;align-items:flex-end;gap:4px;height:46px;margin-top:8px}
+  .bars span{flex:1;height:var(--h);border-radius:3px 3px 2px 2px;background:linear-gradient(180deg,var(--accent),var(--accent-2));opacity:.85}
+  .bars span:nth-child(2n){opacity:.4}
+  .app-shortcuts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}
+  .app-shortcut{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:6.5px;font-weight:700;color:var(--a-muted)}
+  .app-shortcut i{width:20px;height:20px;border-radius:7px;background:color-mix(in srgb,var(--accent) 16%,transparent)}
+  .app-row{display:flex;align-items:center;gap:7px;padding:6px 0;border-top:1px solid var(--a-line)}
+  .app-row:first-child{border-top:0}
+  .app-ico{flex:0 0 auto;width:20px;height:20px;border-radius:7px;background:color-mix(in srgb,var(--accent) 16%,transparent)}
+  .app-row b{display:block;font-size:8px;font-weight:700}
+  .app-row small{display:block;font-size:6.5px;color:var(--a-muted)}
+  .app-val{margin-left:auto;font-size:8px;font-weight:750;letter-spacing:-.01em}
+  .app-val.neg{color:#e05252}
+  [data-theme="dark"] .app-val.neg{color:#ff8f8f}
+  .app-search{display:flex;align-items:center;gap:6px;height:22px;margin-top:8px;padding:0 8px;border:1px solid var(--a-line);border-radius:8px;background:var(--a-card);font-size:7px;color:var(--a-muted)}
+  .app-search i{width:7px;height:7px;border:1.5px solid var(--a-muted);border-radius:50%}
+  .app-goal{margin-top:8px}
+  .app-goal:first-child{margin-top:0}
+  .app-goal-head{display:flex;justify-content:space-between;font-size:8px;font-weight:700}
+  .app-progress{height:5px;margin-top:5px;overflow:hidden;border-radius:99px;background:var(--a-line)}
+  .app-progress span{display:block;width:var(--p);height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+  .app-onb{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 10px;text-align:center}
+  .app-orb{position:relative;width:64px;height:64px;margin-bottom:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(52,211,153,.55),rgba(16,185,129,.25) 55%,transparent 72%)}
+  .app-orb::after{content:"";position:absolute;inset:20px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+  .app-onb h4{margin:0;font-size:11px;letter-spacing:-.02em}
+  .app-onb p{margin:4px 0 0;font-size:7px;color:var(--a-muted)}
+  .app-dots{display:flex;gap:4px;margin-top:10px}
+  .app-dots i{width:4px;height:4px;border-radius:50%;background:var(--a-line)}
+  .app-dots i:first-child{width:12px;border-radius:99px;background:var(--accent)}
+  .app-btn{display:inline-flex;align-items:center;height:20px;margin-top:10px;padding:0 12px;border-radius:7px;background:linear-gradient(180deg,#4ade80,#10b981);color:#04231a;font-size:7px;font-weight:700}
+  .app-nav{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:auto;padding:7px 6px 9px;border-top:1px solid var(--a-line);background:var(--a-card)}
+  .app-nav i{height:3px;border-radius:99px;background:var(--a-line)}
+  .app-nav i:first-child{background:var(--accent)}
+
+  .slide figcaption{margin-top:12px;padding:0 2px}
+  .slide figcaption b{display:block;font-size:13.5px;letter-spacing:-.01em}
+  .slide figcaption span{display:block;margin-top:2px;font-size:12px;line-height:1.45;color:var(--muted)}
+
+  .gallery-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:2px}
+  .dots{display:flex;align-items:center}
+  .dots button{display:grid;place-items:center;width:34px;height:34px;padding:0;border:0;background:transparent;cursor:pointer}
+  .dots button::before{content:"";width:7px;height:7px;border-radius:99px;background:var(--line);transition:width .2s ease,background .2s ease}
+  .dots button[aria-current="true"]::before{width:20px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+  .arrows{display:flex;gap:8px}
+  .arrow{display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--txt);cursor:pointer;transition:transform .12s ease,background .2s ease,opacity .2s ease}
+  .arrow:active{transform:scale(.93)}
+  .arrow:disabled{opacity:.35;cursor:default}
+  .arrow svg{width:16px;height:16px}
+
+  /* ================= processo ================= */
+  .timeline{position:relative;display:grid;gap:12px;margin-top:20px;padding-left:26px}
+  .timeline::before{content:"";position:absolute;top:10px;bottom:10px;left:9px;width:2px;border-radius:2px;background:linear-gradient(180deg,var(--accent),var(--accent-2),transparent)}
+  .step{position:relative;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:var(--shadow)}
+  .step::before{content:"";position:absolute;top:20px;left:-26px;width:10px;height:10px;border:2px solid var(--accent);border-radius:50%;background:var(--bg)}
+  .step-num{font-family:ui-serif,Georgia,serif;font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--accent)}
+  .step h3{margin:6px 0 0;font-size:15px;letter-spacing:-.01em}
+  .step p{margin:6px 0 0;font-size:13px;line-height:1.55;color:var(--muted)}
+  .step-tag{display:inline-block;margin-top:12px;padding:4px 8px;border-radius:99px;background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--accent);font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+
+  /* ================= decisões (accordion) ================= */
+  .decisions{display:grid;gap:10px;margin-top:18px}
+  .decision{overflow:hidden;border:1px solid var(--line);border-radius:16px;background:var(--surface);transition:border-color .2s ease,box-shadow .2s ease}
+  .decision[open]{border-color:color-mix(in srgb,var(--accent) 42%,var(--line));box-shadow:var(--shadow)}
+  .decision summary{display:flex;align-items:center;gap:12px;min-height:58px;padding:16px;font-size:14px;font-weight:650;letter-spacing:-.01em;list-style:none;cursor:pointer}
+  .decision summary::-webkit-details-marker{display:none}
+  .decision summary:active{background:var(--surface-2)}
+  .decision .num{display:grid;place-items:center;flex:0 0 auto;width:26px;height:26px;border-radius:8px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:10.5px;font-weight:700}
+  .decision .chev{display:grid;place-items:center;flex:0 0 auto;width:26px;height:26px;margin-left:auto;border:1px solid var(--line);border-radius:50%;color:var(--muted);transition:transform .25s ease,color .2s ease,border-color .2s ease}
+  .decision .chev svg{width:12px;height:12px}
+  .decision[open] .chev{transform:rotate(45deg);border-color:color-mix(in srgb,var(--accent) 42%,var(--line));color:var(--accent)}
+  .decision-body{padding:0 16px 16px}
+  .decision-body p{margin:10px 0 0;font-size:13.5px;line-height:1.6;color:var(--muted)}
+  .decision-body p:first-child{margin-top:0}
+  .decision-body strong{color:var(--txt);font-weight:650}
+
+  /* ================= resultados ================= */
+  .metrics{display:grid;gap:12px;margin-top:18px}
+  .metric{padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:var(--shadow);text-align:center}
+  .metric b{display:block;font-size:34px;font-weight:750;line-height:1;letter-spacing:-.04em;background:linear-gradient(120deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .metric span{display:block;margin-top:8px;font-size:12px;font-weight:600;line-height:1.4;color:var(--muted)}
+
+  .quote{position:relative;overflow:hidden;margin:22px 0 0;padding:22px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 12%,var(--surface)),var(--surface) 70%)}
+  .quote blockquote{margin:0;font-family:ui-serif,Georgia,serif;font-size:18px;line-height:1.45;letter-spacing:-.01em}
+  .quote figcaption{display:flex;align-items:center;gap:10px;margin-top:16px;font-size:12px;color:var(--muted)}
+  .quote figcaption b{display:block;font-size:12.5px;font-weight:650;color:var(--txt)}
+  .avatar{display:grid;place-items:center;flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font-size:11px;font-weight:700}
+
+  /* ================= próximos passos ================= */
+  .next{display:grid;gap:10px;margin:18px 0 0;padding:0;list-style:none}
+  .next li{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;border:1px dashed var(--line);border-radius:14px;background:var(--surface);font-size:13.5px;line-height:1.55;color:var(--muted)}
+  .next li::before{content:"";flex:0 0 auto;width:8px;height:8px;margin-top:6px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+
+  /* ================= contato ================= */
+  .contact{position:relative;overflow:hidden;margin-top:26px;padding:26px 22px;border-radius:22px;background:linear-gradient(140deg,#031f14,#064e3b 52%,#0f766e);color:#fff;box-shadow:0 26px 48px -26px rgba(6,95,70,.75)}
+  .contact::after{content:"";position:absolute;top:-80px;right:-60px;width:220px;height:220px;border-radius:50%;background:rgba(163,230,53,.10);pointer-events:none}
+  .contact h2{position:relative;margin:0;font-size:23px;letter-spacing:-.02em}
+  .contact p{position:relative;margin:8px 0 18px;max-width:42ch;font-size:13.5px;line-height:1.55;color:rgba(232,245,238,.88)}
+  .contact-actions{position:relative;display:flex;flex-wrap:wrap;gap:10px}
+  .contact .btn{background:#ecfdf5;color:#052e16;border-color:transparent}
+  .contact .btn-outline{background:rgba(255,255,255,.10);color:#fff;border-color:rgba(255,255,255,.30)}
+  .contact .btn:active{background:#d1fae5}
+  .contact .btn-whats{background:#25d366;color:#042d16;box-shadow:0 12px 24px -16px rgba(37,211,102,.9)}
+  .contact .btn-whats:active{background:#1fbe5b}
+  .contact .btn-whats svg{width:17px;height:17px}
+
+  /* ================= rodapé ================= */
+  .footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 18px;margin-top:36px;padding-top:22px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted)}
+  .footer-links{display:flex;gap:16px}
+  .footer a{text-decoration:none}
+  .footer a:hover{color:var(--txt)}
+
+  /* ================= barra inferior (celular) ================= */
+  .tabbar{
+    position:fixed;right:0;bottom:0;left:0;z-index:45;display:grid;grid-template-columns:repeat(4,1fr);
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--line);
+    background:var(--bg);
+    background:color-mix(in srgb,var(--bg) 84%,transparent);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+  }
+  .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;padding:6px 0;border-radius:12px;color:var(--muted);font-size:10px;font-weight:600;text-decoration:none;transition:color .15s ease,background .15s ease}
+  .tab:active{background:var(--surface-2)}
+  .tab svg{width:20px;height:20px}
+  .tab[aria-current="true"]{color:var(--accent)}
+  .tab span{line-height:1}
+
+  /* ================= visual do hero (desktop) ================= */
+  .hv-poster{
+    position:absolute;inset:8% 0 8% 6%;display:flex;flex-direction:column;justify-content:space-between;
+    overflow:hidden;padding:22px;border-radius:26px;color:#fff;
+    background:linear-gradient(150deg,#031f14,#064e3b 48%,#0f766e);
+    box-shadow:0 40px 70px -34px rgba(6,95,70,.65);
+  }
+  .hv-poster::after{content:"";position:absolute;top:-120px;right:-100px;width:300px;height:300px;border-radius:50%;background:rgba(163,230,53,.12)}
+  .hv-poster-top{position:relative;display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+  .hv-poster-mid{position:relative;display:flex;align-items:center;gap:16px}
+  .hv-letter{font-family:ui-serif,Georgia,serif;font-size:74px;font-style:italic;line-height:.9;letter-spacing:-.05em;opacity:.95}
+  .hv-poster-mid strong{display:block;font-family:ui-serif,Georgia,serif;font-size:36px;font-weight:600;letter-spacing:-.03em}
+  .hv-poster-mid small{display:block;margin-top:2px;font-size:12px;opacity:.82}
+  .hv-swatches{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .hv-swatches i{height:44px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:#022c1a}
+  .hv-swatches i:nth-child(2){background:#0b3b27}
+  .hv-swatches i:nth-child(3){background:#10b981}
+  .hv-swatches i:nth-child(4){background:#a3e635}
+  .hv-poster-foot{position:relative;display:flex;justify-content:space-between;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;opacity:.8}
+  .hv-glow{position:absolute;inset:6% -4% 2% 2%;border-radius:50%;background:radial-gradient(circle at 42% 38%,rgba(52,211,153,.35),rgba(16,185,129,.22) 48%,transparent 72%);filter:blur(34px);pointer-events:none}
+  .hv-float{position:absolute;display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:0 20px 40px -24px rgba(0,0,0,.7);font-size:12px;font-weight:650;animation:floaty 7s ease-in-out infinite}
+  .hv-float small{display:block;margin-top:1px;font-size:10px;font-weight:600;color:var(--muted)}
+  .hv-float-a{top:0;right:-6px}
+  .hv-float-b{bottom:2%;left:-8px;animation-delay:-3.2s}
+  .hv-ico{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent)}
+  .hv-ico svg{width:15px;height:15px}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+  /* ================= tablet ================= */
+  @media (min-width:640px){
+    .meta{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .timeline{grid-template-columns:1fr 1fr;padding-left:0}
+    .timeline::before{display:none}
+    .step::before{display:none}
+    .next{grid-template-columns:1fr 1fr}
+    .track{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;margin:0;padding:0;overflow:visible}
+    .slide{width:auto;max-width:300px;margin-inline:auto}
+    .phone{width:100%;max-width:280px;margin-inline:auto}
+    .gallery-bar{display:none}
+    .hv-float-a{right:8px}
+    .hv-float-b{left:8px}
+  }
+
+  /* ================= desktop ================= */
+  @media (min-width:880px){
+    :root{--topbar-h:72px}
+    body{padding-bottom:0}
+    .topbar-inner{padding:16px 24px}
+    .brand{font-size:15px}
+    .brand-mark{width:30px;height:30px}
+    .nav{display:flex;align-items:center;gap:4px;margin-left:auto}
+    .nav-cta{display:inline-flex;min-height:42px;padding:0 18px;font-size:13px;border-radius:12px}
+    .topbar-actions{margin-left:14px}
+    .wrap{padding-inline:24px}
+
+    .hero{padding:54px 0 10px}
+    .hero::before{top:-90px;right:-40px;width:520px;height:520px;filter:blur(40px)}
+    .hero-grid{display:grid;grid-template-columns:1.04fr .96fr;gap:56px;align-items:center}
+    h1{font-size:clamp(44px,4.6vw,60px);line-height:1.02}
+    .hero-lead{font-size:16px}
+    .meta{margin-top:30px;padding:0;border:0;background:transparent;box-shadow:none;gap:20px}
+    .meta dd{font-size:14px}
+    .hero-actions{margin-top:30px;gap:12px}
+    .btn{min-height:52px;padding:0 24px;font-size:14.5px}
+    .hero-visual{position:relative;display:block;height:490px}
+
+    .section{padding-top:78px}
+    .section-head h2{font-size:30px}
+    .section-head p{font-size:15px}
+    .gallery{margin-top:26px}
+    .track{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+    .slide{max-width:none}
+    .phone{max-width:300px}
+
+    .timeline{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:26px}
+    .step{padding:18px}
+    .step h3{font-size:16px}
+    .step p{font-size:13.5px}
+
+    .decisions{margin-top:24px;gap:12px}
+    .decision summary{min-height:64px;padding:18px 20px;font-size:15px}
+    .decision-body{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;padding:0 20px 20px}
+    .decision-body p{font-size:13.5px}
+
+    .metrics{margin-top:24px;gap:16px}
+    .metric{padding:26px;text-align:left}
+    .metric b{font-size:42px}
+    .metric span{font-size:12.5px;max-width:24ch}
+    .quote{margin-top:24px;padding:30px}
+    .quote blockquote{font-size:21px;max-width:34ch}
+
+    .next{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:24px}
+    .contact{margin-top:42px;padding:40px 38px}
+    .contact h2{font-size:30px}
+    .contact p{font-size:14.5px;max-width:46ch}
+    .footer{margin-top:48px;padding:24px 0 40px;font-size:12px}
+
+    .tabbar{display:none}
+
+    @media (hover:hover){
+      .btn-primary:hover{box-shadow:0 18px 32px -14px rgba(16,185,129,.95);transform:translateY(-1px)}
+      .btn-ghost:hover{background:var(--surface-2)}
+      .arrow:hover{background:var(--surface-2)}
+      .metric:hover{border-color:color-mix(in srgb,var(--accent) 30%,var(--line))}
+      .step:hover{border-color:color-mix(in srgb,var(--accent) 28%,var(--line))}
+      .quote:hover{border-color:color-mix(in srgb,var(--accent) 28%,var(--line))}
+      .footer a:hover{color:var(--accent)}
+    }
+  }
+
+  @media (min-width:1100px){
+    .track{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+    .phone{max-width:250px}
+    .contact{display:flex;align-items:center;justify-content:space-between;gap:32px}
+    .contact p{margin-bottom:0}
+    .contact-actions{flex:0 0 auto;justify-content:flex-end}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation:none !important;transition:none !important}
+    .js .reveal{opacity:1;transform:none}
+  }
+</style>
+<script>
+  (function () {
+    document.documentElement.classList.add("js");
+    try {
+      var tema = localStorage.getItem("aurora-tema");
+      if (tema !== "light" && tema !== "dark") tema = "dark";
+      document.documentElement.dataset.theme = tema;
+    } catch (e) {}
+  })();
+</script>
+</head>
+<body>
+
+<div id="progresso" aria-hidden="true"></div>
+
+<header class="topbar" id="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#inicio" aria-label="Kauan — portfólio, voltar ao início">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>Kauan<small>portfólio</small></span>
+    </a>
+
+    <nav class="nav" aria-label="Seções do projeto">
+      <a href="#telas">Telas</a>
+      <a href="#processo">Processo</a>
+      <a href="#decisoes">Decisões</a>
+      <a href="#resultados">Resultados</a>
+    </nav>
+
+    <div class="topbar-actions">
+      <a class="btn btn-ghost nav-cta" href="#contato">Falar comigo</a>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Alternar tema claro e escuro" aria-pressed="false">
+        <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z"/>
+        </svg>
+        <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="inicio">
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">Case study · Produto digital</span>
+        <h1>Aurora: finanças do dia a dia, <em>sem burocracia.</em></h1>
+        <p class="hero-lead">Redesign de um app de finanças pessoais feito para quem desiste no meio do caminho. Do problema real aos testes com usuários — este é o processo completo.</p>
+
+        <dl class="meta">
+          <div><dt>Meu papel</dt><dd>UX/UI designer</dd></div>
+          <div><dt>Duração</dt><dd>6 semanas</dd></div>
+          <div><dt>Ano</dt><dd>2025</dd></div>
+          <div><dt>Plataformas</dt><dd>iOS e Android</dd></div>
+        </dl>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#telas">
+            Ver as telas
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="#processo">Ler o processo</a>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hv-glow"></div>
+
+        <div class="hv-poster">
+          <div class="hv-poster-top"><span>Case study</span><span>2025</span></div>
+          <div class="hv-poster-mid">
+            <span class="hv-letter">Aa</span>
+            <div>
+              <strong>Aurora</strong>
+              <small>Finanças sem burocracia</small>
+            </div>
+          </div>
+          <div class="hv-swatches"><i></i><i></i><i></i><i></i></div>
+          <div class="hv-poster-foot"><span>UI · UX · Research</span><span>12 telas</span></div>
+        </div>
+
+        <div class="hv-float hv-float-a">
+          <span class="hv-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg>
+          </span>
+          <span>-38%<small>tempo por tarefa</small></span>
+        </div>
+
+        <div class="hv-float hv-float-b">
+          <span class="hv-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.5a3 3 0 0 1 0 5.5M18 20a6 6 0 0 0-2.5-4.9"/></svg>
+          </span>
+          <span>12 testes<small>com usuários</small></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="telas">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">As telas</span>
+        <h2>Um app que some no bolso — e resolve.</h2>
+        <p>Arraste para o lado para ver cada tela. Use as setas, os pontos ou o teclado para navegar.</p>
+      </div>
+
+      <div class="gallery reveal">
+        <div class="track" id="track" tabindex="0" role="group" aria-label="Telas do projeto. Arraste ou use as setas do teclado.">
+          <figure class="slide">
+            <div class="phone" aria-hidden="true">
+              <div class="screen">
+                <div class="app-status"><span>9:41</span><span class="app-signal"><i></i><i></i><i></i></span></div>
+                <div class="app-body">
+                  <p class="app-hi">Bom dia, Marina</p>
+                  <p class="app-h1">Seu dinheiro hoje</p>
+                  <div class="app-card">
+                    <span class="app-label">Saldo disponível</span>
+                    <p class="app-balance">R$ 8.420<span class="app-pill">+12%</span></p>
+                    <div class="bars">
+                      <span style="--h:36%"></span>
+                      <span style="--h:54%"></span>
+                      <span style="--h:44%"></span>
+                      <span style="--h:70%"></span>
+                      <span style="--h:58%"></span>
+                      <span style="--h:86%"></span>
+                      <span style="--h:74%"></span>
+                    </div>
+                  </div>
+                  <div class="app-card app-shortcuts">
+                    <span class="app-shortcut"><i></i>Pix</span>
+                    <span class="app-shortcut"><i></i>Pagar</span>
+                    <span class="app-shortcut"><i></i>Metas</span>
+                  </div>
+                </div>
+                <div class="app-nav"><i></i><i></i><i></i><i></i></div>
+              </div>
+            </div>
+            <figcaption><b>Visão geral</b><span>Saldo, gastos do mês e atalhos em uma única dobra.</span></figcaption>
+          </figure>
+
+          <figure class="slide">
+            <div class="phone" aria-hidden="true">
+              <div class="screen">
+                <div class="app-status"><span>9:41</span><span class="app-signal"><i></i><i></i><i></i></span></div>
+                <div class="app-body">
+                  <p class="app-h1">Transações</p>
+                  <div class="app-search"><i></i>Buscar por nome ou categoria</div>
+                  <div class="app-card">
+                    <div class="app-row">
+                      <span class="app-ico" style="background:rgba(163,230,53,.22)"></span>
+                      <span><b>Café da esquina</b><small>Hoje · Alimentação</small></span>
+                      <span class="app-val neg">- R$ 18</span>
+                    </div>
+                    <div class="app-row">
+                      <span class="app-ico" style="background:rgba(16,185,129,.20)"></span>
+                      <span><b>Salário</b><small>Ontem · Receita</small></span>
+                      <span class="app-val">+ R$ 6.400</span>
+                    </div>
+                    <div class="app-row">
+                      <span class="app-ico" style="background:rgba(52,211,153,.22)"></span>
+                      <span><b>Assinaturas</b><small>Ontem · Fixos</small></span>
+                      <span class="app-val neg">- R$ 74</span>
+                    </div>
+                    <div class="app-row">
+                      <span class="app-ico" style="background:rgba(4,120,87,.22)"></span>
+                      <span><b>Farmácia</b><small>2 dias · Saúde</small></span>
+                      <span class="app-val neg">- R$ 42</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="app-nav"><i></i><i></i><i></i><i></i></div>
+              </div>
+            </div>
+            <figcaption><b>Transações</b><span>Busca sempre visível e categorias fáceis de escanear.</span></figcaption>
+          </figure>
+
+          <figure class="slide">
+            <div class="phone" aria-hidden="true">
+              <div class="screen">
+                <div class="app-status"><span>9:41</span><span class="app-signal"><i></i><i></i><i></i></span></div>
+                <div class="app-body">
+                  <p class="app-hi">Planejamento</p>
+                  <p class="app-h1">Suas metas</p>
+                  <div class="app-card">
+                    <div class="app-goal">
+                      <div class="app-goal-head"><span>Reserva</span><span>72%</span></div>
+                      <div class="app-progress"><span style="--p:72%"></span></div>
+                    </div>
+                    <div class="app-goal">
+                      <div class="app-goal-head"><span>Viagem</span><span>45%</span></div>
+                      <div class="app-progress"><span style="--p:45%"></span></div>
+                    </div>
+                    <div class="app-goal">
+                      <div class="app-goal-head"><span>Notebook</span><span>88%</span></div>
+                      <div class="app-progress"><span style="--p:88%"></span></div>
+                    </div>
+                  </div>
+                  <div class="app-card">
+                    <span class="app-label">Total guardado</span>
+                    <p class="app-balance">R$ 14.200</p>
+                  </div>
+                </div>
+                <div class="app-nav"><i></i><i></i><i></i><i></i></div>
+              </div>
+            </div>
+            <figcaption><b>Metas</b><span>Progresso visível sem números escondidos em menus.</span></figcaption>
+          </figure>
+
+          <figure class="slide">
+            <div class="phone" aria-hidden="true">
+              <div class="screen">
+                <div class="app-status"><span>9:41</span><span class="app-signal"><i></i><i></i><i></i></span></div>
+                <div class="app-body app-onb">
+                  <div class="app-orb"></div>
+                  <h4>Seu dinheiro,<br>mais leve</h4>
+                  <p>Controle gastos em segundos, sem planilhas.</p>
+                  <div class="app-dots"><i></i><i></i><i></i></div>
+                  <span class="app-btn">Vamos lá</span>
+                </div>
+              </div>
+            </div>
+            <figcaption><b>Primeiro acesso</b><span>Uma promessa clara e um único caminho para começar.</span></figcaption>
+          </figure>
+        </div>
+
+        <div class="gallery-bar">
+          <div class="dots" id="dots" role="tablist" aria-label="Ir para uma tela"></div>
+          <div class="arrows">
+            <button class="arrow" id="prev" type="button" aria-label="Tela anterior">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+            </button>
+            <button class="arrow" id="next" type="button" aria-label="Próxima tela">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="processo">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">Processo</span>
+        <h2>Seis semanas, quatro movimentos.</h2>
+        <p>Nada de pular direto para a tela bonita. Cada etapa existiu para responder a uma pergunta do projeto.</p>
+      </div>
+
+      <div class="timeline">
+        <article class="step reveal">
+          <span class="step-num">01</span>
+          <h3>Descoberta</h3>
+          <p>Cinco entrevistas e uma análise de três concorrentes. A conclusão mudou o rumo: o problema não era registrar gastos, era lembrar de fazer isso.</p>
+          <span class="step-tag">Research</span>
+        </article>
+
+        <article class="step reveal">
+          <span class="step-num">02</span>
+          <h3>Definição</h3>
+          <p>Mapeei a jornada até o primeiro registro e defini uma meta simples: qualquer gasto em até três toques, sem tutorial.</p>
+          <span class="step-tag">Fluxos</span>
+        </article>
+
+        <article class="step reveal">
+          <span class="step-num">03</span>
+          <h3>Prototipagem</h3>
+          <p>Doze telas e um design system mínimo — tipografia, cores e componentes pensados para funcionar no escuro e no claro.</p>
+          <span class="step-tag">UI design</span>
+        </article>
+
+        <article class="step reveal">
+          <span class="step-num">04</span>
+          <h3>Validação</h3>
+          <p>Duas rodadas de testes moderados com 12 pessoas. Ajustei rótulos, hierarquia e o fluxo de metas antes de fechar.</p>
+          <span class="step-tag">Testes</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="decisoes">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">Decisões</span>
+        <h2>O que mudou — e por quê.</h2>
+        <p>Três escolhas que definiram o produto. Toque em cada uma para ver o problema, a decisão e o trade-off.</p>
+      </div>
+
+      <div class="decisions">
+        <details class="decision reveal">
+          <summary>
+            <span class="num">01</span>
+            Saldo primeiro, menu depois
+            <span class="chev" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+          </summary>
+          <div class="decision-body">
+            <p><strong>Problema:</strong> a versão anterior abria em uma home com atalhos e banners. Nos testes, as pessoas levavam mais de 8 segundos para responder “quanto eu tenho hoje?”.</p>
+            <p><strong>Decisão:</strong> o saldo virou o primeiro elemento da tela, com o gráfico do mês logo abaixo. Atalhos ficaram em segundo plano.</p>
+            <p><strong>Trade-off:</strong> recursos como investimentos perderam destaque. Compensei com um acesso fixo na barra inferior.</p>
+          </div>
+        </details>
+
+        <details class="decision reveal">
+          <summary>
+            <span class="num">02</span>
+            Registrar um gasto em até três toques
+            <span class="chev" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+          </summary>
+          <div class="decision-body">
+            <p><strong>Problema:</strong> o formulário antigo tinha sete campos obrigatórios. Metade dos participantes desistia no meio.</p>
+            <p><strong>Decisão:</strong> valor, categoria sugerida e confirmar. O restante ficou opcional em “detalhes”, com edição depois.</p>
+            <p><strong>Trade-off:</strong> perdi precisão na primeira captura. Em troca, o registro passou a acontecer no momento em que a pessoa lembra.</p>
+          </div>
+        </details>
+
+        <details class="decision reveal">
+          <summary>
+            <span class="num">03</span>
+            Metas sem gamificação excessiva
+            <span class="chev" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+          </summary>
+          <div class="decision-body">
+            <p><strong>Problema:</strong> a primeira proposta usava medalhas, streaks e notificações diárias. Os participantes descreveram a experiência como “cobrança”.</p>
+            <p><strong>Decisão:</strong> mantive apenas o progresso visual e um resumo semanal. Sem ranking, sem culpa.</p>
+            <p><strong>Trade-off:</strong> menos gatilhos de retorno diário. Em compensação, a percepção de confiança no app subiu nos testes.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="resultados">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">Resultados</span>
+        <h2>O que os testes mostraram.</h2>
+        <p>Métricas de um protótipo navegável com 12 participantes, comparadas à versão anterior do app.</p>
+      </div>
+
+      <div class="metrics">
+        <div class="metric reveal">
+          <b data-count="38" data-prefix="-" data-suffix="%">-38%</b>
+          <span>tempo para registrar um gasto</span>
+        </div>
+        <div class="metric reveal">
+          <b data-count="12">12</b>
+          <span>pessoas nos testes moderados</span>
+        </div>
+        <div class="metric reveal">
+          <b data-count="4.8" data-decimals="1" data-suffix="/5">4,8/5</b>
+          <span>satisfação com o novo fluxo</span>
+        </div>
+      </div>
+
+      <figure class="quote reveal">
+        <blockquote>“Antes eu desistia na terceira tela. Agora eu registro o gasto antes de sair do caixa.”</blockquote>
+        <figcaption>
+          <span class="avatar">MC</span>
+          <span><b>Marina C.</b>participante do teste · 32 anos</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section" id="proximos">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">Próximos passos</span>
+        <h2>Onde o projeto continuaria.</h2>
+        <p>Um case study honesto também mostra o que ainda não está resolvido.</p>
+      </div>
+
+      <ul class="next reveal">
+        <li>Testar o fluxo de metas com quem já usa planilhas e não quer abandonar o hábito.</li>
+        <li>Desenhar o modo offline para registros feitos em lugares sem conexão.</li>
+        <li>Levar o onboarding para um teste A/B com dois níveis de explicação.</li>
+      </ul>
+
+      <div class="contact reveal" id="contato">
+        <div>
+          <h2>Gostou do processo?</h2>
+          <p>Este é um projeto conceitual de portfólio. Se quiser conversar sobre produto, design ou uma oportunidade, me chama.</p>
+        </div>
+        <div class="contact-actions">
+          <a class="btn btn-whats" id="waShare" href="https://wa.me/?text=Aurora%20%E2%80%94%20case%20study%20de%20finan%C3%A7as%20pessoais" target="_blank" rel="noopener" aria-label="Compartilhar este case study no WhatsApp">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+            Compartilhar no WhatsApp
+          </a>
+          <a class="btn" href="mailto:seuemail@exemplo.com">
+            Enviar e-mail
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn btn-outline" href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="wrap footer">
+    <span>© 2025 Kauan · Projeto conceitual de portfólio</span>
+    <div class="footer-links">
+      <a href="#inicio">Voltar ao topo</a>
+      <a href="mailto:seuemail@exemplo.com">E-mail</a>
+    </div>
+  </footer>
+</main>
+
+<nav class="tabbar" aria-label="Navegação rápida">
+  <a class="tab" href="#inicio" data-section="inicio">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-6h4v6"/></svg>
+    <span>Início</span>
+  </a>
+  <a class="tab" href="#telas" data-section="telas">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>
+    <span>Telas</span>
+  </a>
+  <a class="tab" href="#processo" data-section="processo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 8.5 4.5L12 12 3.5 7.5 12 3Z"/><path d="m3.5 12.5 8.5 4.5 8.5-4.5"/><path d="m3.5 17 8.5 4.5 8.5-4.5"/></svg>
+    <span>Processo</span>
+  </a>
+  <a class="tab" href="#contato" data-section="contato">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg>
+    <span>Contato</span>
+  </a>
+</nav>
+
+<script>
+  (function () {
+    "use strict";
+
+    var root = document.documentElement;
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* ---------------- tema ---------------- */
+    var themeBtn = document.getElementById("themeBtn");
+    function syncThemeBtn() {
+      var escuro = root.dataset.theme === "dark";
+      themeBtn.setAttribute("aria-pressed", escuro ? "true" : "false");
+      themeBtn.setAttribute("aria-label", escuro ? "Ativar tema claro" : "Ativar tema escuro");
+    }
+    syncThemeBtn();
+    themeBtn.addEventListener("click", function () {
+      var proximo = root.dataset.theme === "dark" ? "light" : "dark";
+      root.dataset.theme = proximo;
+      try { localStorage.setItem("aurora-tema", proximo); } catch (e) {}
+      syncThemeBtn();
+    });
+
+    /* ---------------- compartilhar no WhatsApp ---------------- */
+    var waShare = document.getElementById("waShare");
+    if (waShare) {
+      if (location.protocol === "file:") {
+        waShare.hidden = true;
+      } else {
+        var linkPublico = location.href.split("#")[0];
+        var mensagem = "Aurora — case study de finanças pessoais: " + linkPublico;
+        waShare.href = "https://wa.me/?text=" + encodeURIComponent(mensagem);
+      }
+    }
+
+    /* ---------------- progresso + topbar + navegação ativa ---------------- */
+    var progresso = document.getElementById("progresso");
+    var topbar = document.getElementById("topbar");
+    var tabLinks = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+    var navLinks = Array.prototype.slice.call(document.querySelectorAll(".nav a"));
+    var secoes = ["inicio", "telas", "processo", "decisoes", "resultados", "proximos", "contato"];
+    var mapaAbas = { inicio: "inicio", telas: "telas", processo: "processo", decisoes: "processo", resultados: "processo", proximos: "contato", contato: "contato" };
+
+    function secaoAtual() {
+      var marcador = window.innerHeight * 0.35;
+      var atual = "inicio";
+      for (var i = 0; i < secoes.length; i++) {
+        var el = document.getElementById(secoes[i]);
+        if (el && el.getBoundingClientRect().top <= marcador) atual = secoes[i];
+      }
+      return atual;
+    }
+
+    function atualizarNavegacao() {
+      var atual = secaoAtual();
+      var abaAtiva = mapaAbas[atual];
+      tabLinks.forEach(function (a) {
+        if (a.dataset.section === abaAtiva) a.setAttribute("aria-current", "true");
+        else a.removeAttribute("aria-current");
+      });
+      navLinks.forEach(function (a) {
+        a.classList.toggle("active", a.getAttribute("href") === "#" + atual);
+      });
+    }
+
+    var agendado = false;
+    function aoRolar() {
+      if (agendado) return;
+      agendado = true;
+      requestAnimationFrame(function () {
+        agendado = false;
+        var max = document.documentElement.scrollHeight - window.innerHeight;
+        var pct = max > 0 ? (window.scrollY / max) * 100 : 0;
+        progresso.style.width = Math.max(0, Math.min(100, pct)) + "%";
+        topbar.classList.toggle("scrolled", window.scrollY > 6);
+        atualizarNavegacao();
+      });
+    }
+    window.addEventListener("scroll", aoRolar, { passive: true });
+    window.addEventListener("resize", aoRolar);
+    aoRolar();
+
+    /* ---------------- revelação no scroll ---------------- */
+    var reveals = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
+    if ("IntersectionObserver" in window && !reduceMotion) {
+      var observadorReveal = new IntersectionObserver(function (entradas) {
+        entradas.forEach(function (entrada) {
+          if (entrada.isIntersecting) {
+            entrada.target.classList.add("is-visible");
+            observadorReveal.unobserve(entrada.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+      reveals.forEach(function (el) { observadorReveal.observe(el); });
+    } else {
+      reveals.forEach(function (el) { el.classList.add("is-visible"); });
+    }
+
+    /* ---------------- accordion ---------------- */
+    var decisoes = Array.prototype.slice.call(document.querySelectorAll(".decision"));
+    decisoes.forEach(function (item) {
+      item.addEventListener("toggle", function () {
+        if (!item.open) return;
+        decisoes.forEach(function (outro) {
+          if (outro !== item) outro.open = false;
+        });
+      });
+    });
+
+    /* ---------------- contadores ---------------- */
+    function formatar(el, valor) {
+      var casas = parseInt(el.dataset.decimals || "0", 10);
+      var prefixo = el.dataset.prefix || "";
+      var sufixo = el.dataset.suffix || "";
+      var numero = casas > 0 ? valor.toFixed(casas).replace(".", ",") : String(Math.round(valor));
+      return prefixo + numero + sufixo;
+    }
+
+    function animarContador(el) {
+      var alvo = parseFloat(el.dataset.count);
+      if (isNaN(alvo)) return;
+      if (reduceMotion) {
+        el.textContent = formatar(el, alvo);
+        return;
+      }
+      var inicio = performance.now();
+      var duracao = 1100;
+      function quadro(agora) {
+        var p = Math.min(1, (agora - inicio) / duracao);
+        var suave = 1 - Math.pow(1 - p, 3);
+        el.textContent = formatar(el, alvo * suave);
+        if (p < 1) requestAnimationFrame(quadro);
+        else el.textContent = formatar(el, alvo);
+      }
+      requestAnimationFrame(quadro);
+    }
+
+    var contadores = Array.prototype.slice.call(document.querySelectorAll("[data-count]"));
+    if ("IntersectionObserver" in window) {
+      var observadorNum = new IntersectionObserver(function (entradas) {
+        entradas.forEach(function (entrada) {
+          if (entrada.isIntersecting) {
+            animarContador(entrada.target);
+            observadorNum.unobserve(entrada.target);
+          }
+        });
+      }, { threshold: 0.5 });
+      contadores.forEach(function (el) { observadorNum.observe(el); });
+    } else {
+      contadores.forEach(animarContador);
+    }
+
+    /* ---------------- carrossel ---------------- */
+    var track = document.getElementById("track");
+    var dots = document.getElementById("dots");
+    var prev = document.getElementById("prev");
+    var next = document.getElementById("next");
+
+    if (track && dots && prev && next) {
+      var slides = Array.prototype.slice.call(track.querySelectorAll(".slide"));
+      var indice = 0;
+
+      function carrosselAtivo() {
+        return track.scrollWidth > track.clientWidth + 4;
+      }
+
+      function centroDoSlide(slide) {
+        return slide.offsetLeft - track.offsetLeft + slide.offsetWidth / 2;
+      }
+
+      function irPara(i, suave) {
+        if (!carrosselAtivo()) return;
+        indice = Math.max(0, Math.min(slides.length - 1, i));
+        var alvo = centroDoSlide(slides[indice]) - track.clientWidth / 2;
+        var comportamento = (suave === false || reduceMotion) ? "auto" : "smooth";
+        track.scrollTo({ left: Math.max(0, alvo), behavior: comportamento });
+        marcarAtivo(indice);
+      }
+
+      function marcarAtivo(i) {
+        indice = i;
+        Array.prototype.forEach.call(dots.children, function (botao, bi) {
+          if (bi === i) botao.setAttribute("aria-current", "true");
+          else botao.removeAttribute("aria-current");
+        });
+        prev.disabled = i === 0;
+        next.disabled = i === slides.length - 1;
+      }
+
+      slides.forEach(function (slide, i) {
+        var botao = document.createElement("button");
+        botao.type = "button";
+        botao.setAttribute("role", "tab");
+        var legenda = slide.querySelector("figcaption b");
+        botao.setAttribute("aria-label", (legenda ? legenda.textContent : "Tela " + (i + 1)) + " — tela " + (i + 1) + " de " + slides.length);
+        botao.addEventListener("click", function () { irPara(i); });
+        dots.appendChild(botao);
+      });
+
+      function sincronizar() {
+        var centroVisivel = track.scrollLeft + track.clientWidth / 2;
+        var melhor = 0;
+        var menorDistancia = Infinity;
+        slides.forEach(function (slide, i) {
+          var d = Math.abs(centroDoSlide(slide) - centroVisivel);
+          if (d < menorDistancia) { menorDistancia = d; melhor = i; }
+        });
+        marcarAtivo(melhor);
+      }
+
+      var pendente = false;
+      track.addEventListener("scroll", function () {
+        if (pendente) return;
+        pendente = true;
+        requestAnimationFrame(function () {
+          pendente = false;
+          sincronizar();
+        });
+      }, { passive: true });
+
+      prev.addEventListener("click", function () { irPara(indice - 1); });
+      next.addEventListener("click", function () { irPara(indice + 1); });
+
+      track.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowRight") { e.preventDefault(); irPara(indice + 1); }
+        if (e.key === "ArrowLeft") { e.preventDefault(); irPara(indice - 1); }
+      });
+
+      /* arrastar com o mouse no desktop — no toque o scroll nativo cuida disso */
+      var arrastando = false;
+      var inicioX = 0;
+      var scrollInicial = 0;
+      var moveu = false;
+
+      track.addEventListener("pointerdown", function (e) {
+        if (e.pointerType !== "mouse") return;
+        arrastando = true;
+        moveu = false;
+        inicioX = e.clientX;
+        scrollInicial = track.scrollLeft;
+        track.classList.add("dragging");
+      });
+
+      window.addEventListener("pointermove", function (e) {
+        if (!arrastando) return;
+        var dx = e.clientX - inicioX;
+        if (Math.abs(dx) > 5) moveu = true;
+        track.scrollLeft = scrollInicial - dx;
+      });
+
+      function fimDoArrasto() {
+        if (!arrastando) return;
+        arrastando = false;
+        track.classList.remove("dragging");
+        if (moveu) {
+          sincronizar();
+          irPara(indice, false);
+        }
+      }
+      window.addEventListener("pointerup", fimDoArrasto);
+      window.addEventListener("pointercancel", fimDoArrasto);
+      window.addEventListener("resize", function () {
+        if (carrosselAtivo()) sincronizar();
+        else marcarAtivo(0);
+      });
+
+      marcarAtivo(0);
+    }
+  })();
+</script>
+</body>
+</html>
